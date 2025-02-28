@@ -12,10 +12,10 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # ADD LOGGING LEVELS AND HANDLER
-app.logging.setLevel(logging.INFO)
+app.logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 handler.setLevel(logging.INFO)
-app.logging.addHandler(handler)
+app.logger.addHandler(handler)
 # END LOGGING LEVELS
 
 Session(app)
