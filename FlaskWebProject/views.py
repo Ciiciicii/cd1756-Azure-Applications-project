@@ -61,20 +61,17 @@ def post(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        app.logger.info('Successful login: User is already authenticated.')
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
-            app.logger.warning('Invalid login attempt: Invalid username or password.')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('home')
-        app.logger.info('Successful login: Validated username and password.')
         return redirect(next_page)
     # Still on login
     session["state"] = str(uuid.uuid4())
@@ -100,7 +97,9 @@ def authorized():
         )
 
         if "error" in result:
+            app.logger.warning('WARNING: MS Authentication failed.')
             return render_template("auth_error.html", result=result)
+        app.logger.info('INFO: User is successfully authenticated.')
         session["user"] = result.get("id_token_claims")
         # Note: In a real app, we'd use the 'name' property from session["user"] below
         # Here, we'll use the admin username for anyone who is authenticated by MS
