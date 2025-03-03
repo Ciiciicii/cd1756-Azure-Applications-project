@@ -89,20 +89,18 @@ def authorized():
         result = None
 
         # Acquire a token from a built msal app, along with the appropriate redirect URI
-        app = _build_msal_app(cache=cache)
-        result = app.acquire_token_by_authorization_code(
+        msal_app = _build_msal_app(cache=cache)
+        result = msal_app.acquire_token_by_authorization_code(
             code=request.args['code'],
             scopes=Config.SCOPE,
             redirect_uri=url_for('authorized', _external=True, _scheme='https')
         )
 
         if "error" in result:
-            # app.logger.warning('WARNING: MS Authentication failed.')
+            app.logger.warning('WARNING: MS Authentication failed.')
             return render_template("auth_error.html", result=result)
-        try:
-            app.logger.info('INFO: User is successfully authenticated through MS Authentication.')
-        except:
-            print("App logger error")
+        app.logger.info('INFO: User is successfully authenticated through MS Authentication.')
+ 
         session["user"] = result.get("id_token_claims")
         # Note: In a real app, we'd use the 'name' property from session["user"] below
         # Here, we'll use the admin username for anyone who is authenticated by MS
