@@ -61,19 +61,21 @@ def post(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        app.logger.info('User is successfully authenticated.')
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
+            app.logger.warning('Invalid username or password.')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('home')
+        app.logger.info('User is successfully authenticated.')
         return redirect(next_page)
-    # Still on login
     session["state"] = str(uuid.uuid4())
     auth_url = _build_auth_url(scopes=Config.SCOPE, state=session["state"])
     return render_template('login.html', title='Sign In', form=form, auth_url=auth_url)
@@ -97,9 +99,10 @@ def authorized():
         )
 
         if "error" in result:
-            app.logger.warning('WARNING: MS Authentication failed.')
+            app.logger.warning('MS Authentication failed.')
             return render_template("auth_error.html", result=result)
-        app.logger.info('INFO: User is successfully authenticated through MS Authentication.')
+        
+        app.logger.info('User is successfully authenticated through MS Authentication.')
  
         session["user"] = result.get("id_token_claims")
         # Note: In a real app, we'd use the 'name' property from session["user"] below
