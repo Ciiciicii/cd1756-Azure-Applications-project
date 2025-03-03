@@ -97,9 +97,12 @@ def authorized():
         )
 
         if "error" in result:
-            app.logger.warning('WARNING: MS Authentication failed.')
+            # app.logger.warning('WARNING: MS Authentication failed.')
             return render_template("auth_error.html", result=result)
-        app.logger.info('INFO: User is successfully authenticated through MS Authentication.')
+        try:
+            app.logger.info('INFO: User is successfully authenticated through MS Authentication.')
+        except:
+            print("App logger error")
         session["user"] = result.get("id_token_claims")
         # Note: In a real app, we'd use the 'name' property from session["user"] below
         # Here, we'll use the admin username for anyone who is authenticated by MS
